@@ -4,7 +4,10 @@ console.log(process.env) // remove this after you've confirmed it working
 
 const express = require('express');
 const mongoose = require('mongoose');
-const encrypt= require('mongoose-encryption');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+// const md5 = require('md5');
+//const encrypt= require('mongoose-encryption');
 // const lodash = require('lodash');
 // const https = require('https');
 
@@ -26,7 +29,7 @@ const userSchema = new mongoose.Schema({
 });
 
 
-userSchema.plugin(encrypt,{secret : process.env.SECRET , encryptedFields: ['password']} );
+// userSchema.plugin(encrypt,{secret : process.env.SECRET , encryptedFields: ['password']} );
 
 const User = mongoose.model("User", userSchema);
 
@@ -50,10 +53,10 @@ app.route("/login")
     }
     else {
       if (result){
-        if(password === result.password)
-        {
+        bcrypt.compare(password, result.password, function(err, compareResult) {
+          if (compareResult)
           res.render("secrets");
-        }
+        });
       }
     }
   });
@@ -68,17 +71,20 @@ app.route("/register")
 
 
 .post( (req, res)=> {
-  let tempUser = new User ({
-    email: req.body.username,
-    password : req.body.password
+  bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+    let tempUser = new User ({
+      email: req.body.username,
+      password : hash
+    });
+    tempUser.save((err)=> {
+      if (!err){
+        res.render("secrets");
+      }
+      else
+      res.send("something went wrong, pls try again !")
+    });
   });
-  tempUser.save((err)=> {
-    if (!err){
-      res.render("secrets");
-    }
-    else
-    res.send("something went wrong, pls try again !")
-  });
+
 });
 
 
