@@ -30,10 +30,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongoose.connect('mongodb://localhost:27017/userDB');
-// mongoose.connect('mongodb+srv://rohan:rohan%4014697@cluster0.c1szl.mongodb.net/todolistDB').catch(err=> {
-//   if (err)
-//   console.log(err);
-// });
+
 
 const userSchema = new mongoose.Schema({
   googleId : String,
